@@ -26,22 +26,27 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: 📋 Copy latest app HTML into assets
-        run: cp desflix-app.html android/app/src/main/assets/desflix-app.html
+        run: |
+          mkdir -p android/app/src/main/assets
+          cp desflix-app.html android/app/src/main/assets/desflix-app.html
 
-      - name: 🔧 Make gradlew executable
-        run: chmod +x android/gradlew
-        working-directory: .
+      - name: 🔧 Generate Gradle Wrapper
+        run: |
+          cd android
+          gradle wrapper --gradle-version 8.1.1
+          chmod +x gradlew
 
       - name: 🏗️ Build Release APK
-        run: ./gradlew assembleRelease --no-daemon
-        working-directory: android
+        run: |
+          cd android
+          ./gradlew assembleRelease --no-daemon --stacktrace
 
       - name: 📦 Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: DesiFlix-v1.0
-          path: android/app/build/outputs/apk/release/app-release*.apk
+          path: android/app/build/outputs/apk/release/*.apk
           retention-days: 30
 
-      - name: ✅ Build complete
-        run: echo "DesiFlix APK built successfully!"
+      - name: ✅ Done
+        run: echo "✅ DesiFlix APK built!"
