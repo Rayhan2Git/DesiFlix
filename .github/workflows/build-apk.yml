@@ -1,0 +1,47 @@
+name: 🍒 Build DesiFlix APK
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'android/**'
+      - 'desflix-app.html'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: ☕ Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: 📱 Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: 📋 Copy latest app HTML into assets
+        run: cp desflix-app.html android/app/src/main/assets/desflix-app.html
+
+      - name: 🔧 Make gradlew executable
+        run: chmod +x android/gradlew
+        working-directory: .
+
+      - name: 🏗️ Build Release APK
+        run: ./gradlew assembleRelease --no-daemon
+        working-directory: android
+
+      - name: 📦 Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DesiFlix-v1.0
+          path: android/app/build/outputs/apk/release/app-release*.apk
+          retention-days: 30
+
+      - name: ✅ Build complete
+        run: echo "DesiFlix APK built successfully!"
